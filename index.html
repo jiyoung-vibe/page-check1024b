@@ -18,16 +18,17 @@
 
     <section>
       <h2>방명록</h2>
-      <form>
+      <div>
         <label for="nickname">별명</label>
         <input id="nickname" type="text" maxlength="20">
 
         <label for="message">한마디</label>
         <textarea id="message" maxlength="500"></textarea>
 
-        <button type="button">남기기</button>
-      </form>
+        <button type="button" id="save-button">남기기</button>
+      </div>
       <ul id="guestbook-list"></ul>
     </section>
+    <script src="script.js"></script>
   </body>
 </html>
