@@ -10,16 +10,36 @@ const headers = {
 const nicknameInput = document.getElementById("nickname");
 const messageInput = document.getElementById("message");
 const saveButton = document.getElementById("save-button");
+const errorMessage = document.getElementById("error-message");
 const list = document.getElementById("guestbook-list");
 
+function showError(text) {
+  errorMessage.textContent = text;
+}
+
+function clearError() {
+  errorMessage.textContent = "";
+}
+
+// 서버가 돌려준 실패 이유를 읽는다. 읽을 수 없으면 상태 코드를 쓴다.
+async function readReason(response) {
+  try {
+    const body = await response.json();
+    return body.message || JSON.stringify(body);
+  } catch (error) {
+    return response.status + " " + response.statusText;
+  }
+}
+
 async function loadGuestbook() {
+  clearError();
   try {
     const response = await fetch(
       TABLE_URL + "?select=nickname,message,created_at&order=created_at.desc",
       { headers }
     );
     if (!response.ok) {
-      throw new Error("목록 불러오기 실패: " + response.status);
+      throw new Error(await readReason(response));
     }
     const rows = await response.json();
 
@@ -31,7 +51,7 @@ async function loadGuestbook() {
     }
   } catch (error) {
     console.error(error);
-    alert("방명록을 불러오지 못했습니다.");
+    showError("방명록을 불러오지 못했습니다. 이유: " + error.message);
   }
 }
 
@@ -44,6 +64,7 @@ async function saveEntry() {
     return;
   }
 
+  clearError();
   try {
     const response = await fetch(TABLE_URL, {
       method: "POST",
@@ -51,7 +72,7 @@ async function saveEntry() {
       body: JSON.stringify({ nickname, message }),
     });
     if (!response.ok) {
-      throw new Error("저장 실패: " + response.status);
+      throw new Error(await readReason(response));
     }
 
     nicknameInput.value = "";
@@ -59,7 +80,7 @@ async function saveEntry() {
     await loadGuestbook();
   } catch (error) {
     console.error(error);
-    alert("저장하지 못했습니다. 잠시 후 다시 해 주세요.");
+    showError("방명록을 남기지 못했습니다. 이유: " + error.message);
   }
 }
 
